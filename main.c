@@ -12,8 +12,7 @@
 
 int main(int argc, char *argv[]){
 if (argc == 5){
-    //Timing calculation
-	clock_t tic_t = clock();
+	clock_t tic_t = clock(); //Total calculation timing
     //Variable declaration
     FILE *pf;
 	char *imgpath = argv[1];
