@@ -20,7 +20,7 @@ if (argc == 5){
 	char *filterpath = argv[2];
 	char *imgrespath = argv[3];
 	char *filtsize = argv[4];
-	int filt_cont, tmpcont, w, h, bpp, cc = 3;
+	int filt_cont, tmpcont, w, h, bpp, cc = 3, colc=1, wc, hc, crop_img_size;
 	double *tmp, *at, *a = malloc(atoi(filtsize)*atoi(filtsize)*sizeof(double *));
     unsigned char sum, *image, *p, *pg, *gray_img, *new_img_gray;
     size_t img_size, gray_img_size, i;
@@ -39,16 +39,19 @@ if (argc == 5){
 	image = stbi_load(imgpath, &w, &h, &bpp, cc);
 	img_size = w * h * cc;
 	gray_img_size = w * h * gray_channels;
+    wc = w - (atoi(filtsize)-1);
+    hc = h - (atoi(filtsize)-1);     
+    crop_img_size = wc* hc;
     //New image memory allocation
 	gray_img = malloc(gray_img_size);
-	new_img_gray = malloc(gray_img_size);
+	new_img_gray = malloc(crop_img_size);
     //Grayscale conversion
-	for(unsigned char *p = image, *pg = gray_img; p != image + img_size; p += cc, pg += gray_channels) {
+	for(p = image, pg = gray_img; p != image + img_size; p += cc, pg += gray_channels) {
 		*pg = (uint8_t)((*p + *(p + 1) + *(p + 2))/3.0);
 	}
 	//Convolution
 	clock_t tic_c = clock(); //Timing convolution
-	for (p = gray_img, pg = new_img_gray; p < gray_img + gray_img_size; p++, pg++){
+	for (p = gray_img, pg = new_img_gray; pg != new_img_gray + crop_img_size; p++, pg++){
         sum = 0;
         tmpcont = 0;
         for (at = (a + (atoi(filtsize)*atoi(filtsize))-1),  filt_cont = (atoi(filtsize)*atoi(filtsize))-1; at >= a; at--, filt_cont--){
@@ -59,11 +62,17 @@ if (argc == 5){
                 tmpcont++;
             }
         }
-        *pg = (uint8_t)sum;
+        if (colc == wc){
+            colc = 1;
+            p = p + atoi(filtsize)-1;
+        } else {
+            colc++;             
+        }
+        *pg = (uint8_t)sum; 
 	}	
 	clock_t toc_c = clock();
     //Write convolution result in file
-	stbi_write_jpg(imgrespath, w, h, gray_channels, new_img_gray, 100);
+	stbi_write_jpg(imgrespath, wc, hc, gray_channels, new_img_gray, wc * gray_channels);
     //Free memory
 	stbi_image_free(image);
 	free(gray_img);
