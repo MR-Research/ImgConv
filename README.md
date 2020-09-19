@@ -8,7 +8,7 @@ Image convolution tool written in C
  - Arbitrary image and filter size.
  - Low computational complexity.
  - Grayscale conversion.
- - No dependencies.
+ - No external dependencies.
 
 ## Installation
 
